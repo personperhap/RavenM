@@ -28,6 +28,7 @@ namespace RavenM
             var explodePacket = new ExplodeProjectilePacket
             {
                 Id = id,
+                Position = position,
             };
 
             using (var writer = new ProtocolWriter(memoryStream))
@@ -43,5 +44,7 @@ namespace RavenM
     public class ExplodeProjectilePacket
     {
         public int Id;
+
+        public Vector3 Position;
     }
 }

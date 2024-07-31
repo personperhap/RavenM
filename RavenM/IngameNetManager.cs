@@ -1374,6 +1374,10 @@ namespace RavenM
                                         if (controller.DamageCooldown.TrueDone())
                                             actor.health = actor_packet.Health;
 
+                                        var spine = actor.ragdoll.HumanBoneTransformRagdoll(HumanBodyBones.Spine).gameObject.GetComponent<Rigidbody>();
+                                        spine.AddForce((actor_packet.RagdollPosition - spine.transform.position), ForceMode.Acceleration);
+                                        actor.OnBalanceSetManually();
+
                                         controller.Targets = actor_packet;
                                         controller.Flags = actor_packet.Flags;
                                     }
@@ -2070,8 +2074,8 @@ namespace RavenM
                                             {
                                                 up = hitInfo.normal;
                                             }
-
-                                            Explode.Invoke(projectile, new object[] { projectile.transform.position, up });
+                                            projectile.transform.position = explodePacket.Position;
+                                            Explode.Invoke(projectile, new object[] { explodePacket.Position, up });
                                         }
                                     }
                                 }
@@ -2671,6 +2675,7 @@ namespace RavenM
             if (actor.dead) flags |= (int)ActorStateFlags.Dead;
             if (actor.aiControlled) flags |= (int)ActorStateFlags.AiControlled;
             if (!actor.dead && actor.controller.DeployParachute()) flags |= (int)ActorStateFlags.DeployParachute;
+            if (!actor.controller.DeployParachute() && actor.fallenOver) flags |= (int)ActorStateFlags.Ragdolled;
 
             return flags;
         }
@@ -2734,8 +2739,8 @@ namespace RavenM
                     // If the player is on a moving platform, we send the delta to
                     // the vehicle instead of the actual position. This is so that
                     // we can stay on the vehicle even though there is a delay in position updates.
-                    Position =  actor.controller is FpsActorController fpsActorController && fpsActorController.movingPlatformVehicle != null 
-                                && fpsActorController.movingPlatformVehicle.TryGetComponent(out GuidComponent _) 
+                    Position = actor.controller is FpsActorController fpsActorController && fpsActorController.movingPlatformVehicle != null
+                                && fpsActorController.movingPlatformVehicle.TryGetComponent(out GuidComponent _)
                                 ? actor.Position() - fpsActorController.movingPlatformVehicle.transform.position : actor.Position(),
                     Lean = actor.dead ? 0f : actor.controller.Lean(),
                     AirplaneInput = actor.seat != null ? (Vector4?)actor.controller.AirplaneInput() : null,
@@ -2770,11 +2775,12 @@ namespace RavenM
                     Health = actor.health,
                     VehicleId = actor.IsSeated() && actor.seat.vehicle.TryGetComponent(out GuidComponent vguid) ? vguid.guid : 0,
                     Seat = actor.IsSeated() ? actor.seat.vehicle.seats.IndexOf(actor.seat) : -1,
-                    MovingPlatformVehicleId = actor.controller is FpsActorController fpsActorController2 && fpsActorController2.movingPlatformVehicle != null 
-                                             && fpsActorController2.movingPlatformVehicle.TryGetComponent(out GuidComponent pguid) 
+                    MovingPlatformVehicleId = actor.controller is FpsActorController fpsActorController2 && fpsActorController2.movingPlatformVehicle != null
+                                             && fpsActorController2.movingPlatformVehicle.TryGetComponent(out GuidComponent pguid)
                                              ? pguid.guid : 0,
                     TargetDetectionProgress = actor.controller is AiActorController aiActorController && aiActorController.slowTargetDetection && aiActorController.HasTarget()
                                              ? aiActorController.targetDetectionProgress : -1f,
+                    RagdollPosition = actor.ragdoll.HumanBoneTransformRagdoll(HumanBodyBones.Spine).position,
                 };
 
                 bulkActorUpdate.Updates.Add(net_actor);

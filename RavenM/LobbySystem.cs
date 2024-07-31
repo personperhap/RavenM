@@ -803,7 +803,7 @@ namespace RavenM
                 {
                     InstantActionMaps.instance.teamDropdown.value = int.Parse(SteamMatchmaking.GetLobbyData(ActualLobbyID, "team"));
                 }
-
+                bool recheck = false;
                 if (instance.LoadedServerMods)
                 {
                     int givenEntry = int.Parse(SteamMatchmaking.GetLobbyData(ActualLobbyID, "loadedLevelEntry"));
@@ -820,15 +820,17 @@ namespace RavenM
                                 if (entry.entry.metaData.displayName == mapName)
                                 {
                                     entry.Select();
+                                    
                                 }
                             }
-                            return; //just to be safe
+                            recheck = true;
+                            Plugin.logger.LogInfo($"rechecking given map");
+                            //just to be safe
                         }
                     }
                     else
                     {
                         InstantActionMaps.instance.mapDropdown.value = givenEntry;
-                        return; //just to be safe: the sequel
                     }
                 }
 
@@ -956,6 +958,10 @@ namespace RavenM
                             }
                         }
                     }
+                }
+                if (recheck)
+                {
+                    return;
                 }
 
                 if (SteamMatchmaking.GetLobbyData(ActualLobbyID, "started") == "yes")

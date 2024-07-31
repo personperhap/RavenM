@@ -2,6 +2,7 @@
 using Ravenfield.Trigger;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 using Steamworks;
 using System.Linq;
 namespace RavenM
@@ -20,7 +21,6 @@ namespace RavenM
                 return false;
             if (ready)
             {
-                ChatManager.instance.PushCommandChatMessage("Starting Scripted Mission!", UnityEngine.Color.white, false, true);
                 foreach (TriggerOnStart triggerOnStart in triggerOnStart)
                 {
                     if (triggerOnStart != null)
@@ -44,9 +44,6 @@ namespace RavenM
                 yield return null;
             }            
             ready = true;
-            yield return null;
-
-
             gamemode.StartGame();
             yield break;
         }
@@ -57,6 +54,8 @@ namespace RavenM
     {
         static bool Prefix(TriggerOnStart __instance)
         {
+            if (!IngameNetManager.instance.IsHost && IngameNetManager.instance.IsClient)
+                return false;
             if (IngameNetManager.instance.IsHost)
             {
                 if (GameModeBase.activeGameMode is ScriptedGameMode && __instance.type == TriggerOnStart.Type.OnStart)
@@ -68,6 +67,7 @@ namespace RavenM
                     else
                     {
                         ScriptedMissionPlayerCheckPatch.triggerOnStart.Add(__instance);
+                        return false;
                     }
                 }
             }

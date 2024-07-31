@@ -165,6 +165,7 @@ namespace RavenM
             Write(value.Seat);
             Write(value.MovingPlatformVehicleId);
             Write(value.TargetDetectionProgress);
+            Write(value.RagdollPosition);
         }
 
         public void Write(ActorFlagsPacket value)
@@ -325,6 +326,7 @@ namespace RavenM
         public void Write(ExplodeProjectilePacket value)
         {
             Write(value.Id);
+            Write(value.Position);
         }
 
         public void Write(DominationStatePacket value)
@@ -689,6 +691,7 @@ namespace RavenM
                 Seat = ReadInt32(),
                 MovingPlatformVehicleId = ReadInt32(),
                 TargetDetectionProgress = ReadSingle(),
+                RagdollPosition = ReadVector3()
             };
         }
 
@@ -916,6 +919,7 @@ namespace RavenM
             return new ExplodeProjectilePacket
             {
                 Id = ReadInt32(),
+                Position = ReadVector3()
             };
         }
 

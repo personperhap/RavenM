@@ -216,6 +216,13 @@ namespace RavenM
                 // This would be broken since we normally set the projectiles it spawns to null.
                 actor.activeWeapon.onSpawnProjectiles.RemoveAllListeners();
             }
+            if (!actor.dead)
+            {
+                if ((Flags & (int)ActorStateFlags.Ragdolled) != 0 && !actor.fallenOver)
+                    actor.FallOver();
+                if (!((Flags & (int)ActorStateFlags.Ragdolled) != 0) && actor.fallenOver)
+                    actor.InstantGetUp();
+            }
         }
 
         public static WeaponManager.WeaponEntry GetWeaponEntryByHash(int hash)
